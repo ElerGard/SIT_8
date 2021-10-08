@@ -6,14 +6,6 @@ Class Phone {
     public string $color;
     public float $screenSize;
 
-    public function setId(int $id) {
-        $this->id = $id;
-    }
-
-    public function setName(string $name) {
-        $this->name = $name;
-    }
-
     public function __construct(int $serialNumber, string $model, string $color, float $screenSize) {
         $this->serialNumber = $serialNumber;
         $this->model = $model;
@@ -22,29 +14,30 @@ Class Phone {
     }
 }
 
-Class Mapper{
+Class Mapper
+{
     private PDO $conn;
 
-    public function __construct() { $conn = new PDO("mysql:host=localhost;dbname=Phone", 'elergard', '13254'); }
+    public function __construct() { $this->conn = new PDO('mysql:host=localhost;dbname=sitedb', 'newuser', 'password'); }
 
     public function save(Phone $phone) {
         $newPhone = "Insert Into phones(serialNumber, model, color, screenSize) Values(?, ?, ?, ?)";
         $addPhone = $this->conn->prepare($newPhone);
-        $addPhone->execute(array($this->serialNumber, $this->model, $this->color, $this->screenSize));
+        $addPhone->execute(array($phone->serialNumber, $phone->model, $phone->color, $phone->screenSize));
     }
 
     public function remove(Phone $phone) {
         $deletePhone = "Delete from phones where serialNumber = ?";
         $delPhone = $this->conn->prepare($deletePhone);
-        $delPhone->execute(array($this->serialNumber));
+        $delPhone->execute(array($phone->serialNumber));
     }
 
-    public function getById($id) {
-        $getPlayer = $this->conn->prepare("Select * from phones where serialNumber = ? ");
-        $getPlayer->execute();
-        $row = $getPlayer->fetchAll();
+    public function getById($serialNumber) {
+        $getPlayer = $this->conn->prepare("Select * from phones where serialNumber = ?");
+        $getPlayer->execute(array($serialNumber));
+        $row = $getPlayer->fetch();
 
-        return new Phone($row['serialNumber'],$row['model'],$row['color'],$row['screenSize']);
+        return $row;
     }
 
     public function all() {
@@ -55,12 +48,30 @@ Class Mapper{
         return $row;
     }
 
-    public function getByField($field, $fieldValue): array
+    public function getByFieldColor($fieldValue): array
     {
+        $getPlayerByField = $this->conn->prepare("Select * from phones where color = ?");
+        $getPlayerByField->execute(array($fieldValue));
 
-        $getPlayerByField = $this->conn->prepare("Select ? from players where ? = ? ");
-        $getPlayerByField->execute(array($field, $field, $fieldValue));
-        $row = $getPlayerByField->fetchAll();
+        $row = $getPlayerByField->fetch();
         return $row;
     }
 }
+
+
+$phone = new Phone(5, "ssas", "ssas", 11);
+$mapper = new Mapper();
+//$mapper->save($phone);
+//$mapper->remove($phone);
+$sa = $mapper->all();
+
+var_dump($sa);
+echo "<p>-------<p>";
+$sa = $mapper->getByID(1);
+
+var_dump($sa);
+echo "<p>-------<p>";
+$sa = $mapper->getByFieldColor("ssas");
+
+var_dump($sa);
+
